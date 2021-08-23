@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:v2.4
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  java:
+    image: msitdevops2021/java
+    labels:
+      - "traefik.http.routers.java.rule=Host(`msit-devops.xyz`) && PathPrefix(`/java`)"
+      - "traefik.http.routers.java.middlewares=java-stripprefix"
+      - "traefik.http.middlewares.java-stripprefix.stripprefix.prefixes=/java"
+  php:
+    image: msitdevops2021/php
+    labels:
+      - "traefik.http.routers.php.rule=Host(`msit-devops.xyz`) && PathPrefix(`/php`)"
+      - "traefik.http.routers.php.middlewares=php-stripprefix"
+      - "traefik.http.middlewares.php-stripprefix.stripprefix.prefixes=/php"
+
+networks:
+  default:
+    name: DevOps
